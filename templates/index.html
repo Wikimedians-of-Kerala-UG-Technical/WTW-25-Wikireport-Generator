@@ -1,0 +1,628 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Malayalam Movies Report</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            padding-bottom: 40px;
+        }
+        
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 50px 0 30px;
+            margin-bottom: 40px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+        }
+        
+        .header h1 {
+            font-size: 2.8em;
+            font-weight: 700;
+            margin-bottom: 10px;
+        }
+        
+        .header p {
+            font-size: 1.1em;
+            opacity: 0.95;
+        }
+        
+        .container-main {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+        
+        .filter-card {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            padding: 30px;
+            margin-bottom: 40px;
+            border-top: 4px solid #667eea;
+        }
+        
+        .filter-title {
+            font-size: 1.5em;
+            font-weight: 700;
+            color: #333;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .year-slider-group {
+            display: grid;
+            grid-template-columns: 1fr 1fr auto auto;
+            gap: 15px;
+            align-items: flex-end;
+            margin-bottom: 20px;
+        }
+        
+        .year-input-group {
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .year-input-group label {
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 8px;
+            font-size: 0.9em;
+        }
+        
+        .year-input-group input,
+        .year-input-group select {
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            font-size: 1em;
+        }
+        
+        .btn-filter {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 10px 24px;
+            border: none;
+            border-radius: 6px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .btn-filter:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+        }
+        
+        .btn-reset {
+            background: #f0f2f5;
+            color: #333;
+            padding: 10px 24px;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .btn-reset:hover {
+            background: #e0e0e0;
+        }
+        
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-bottom: 40px;
+        }
+        
+        .stat-card {
+            background: white;
+            border-radius: 12px;
+            padding: 30px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            border-left: 5px solid #667eea;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .stat-card:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+        }
+        
+        .stat-card::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            right: -50%;
+            width: 200px;
+            height: 200px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            opacity: 0.05;
+            border-radius: 50%;
+        }
+        
+        .stat-icon {
+            font-size: 2.5em;
+            color: #667eea;
+            margin-bottom: 15px;
+        }
+        
+        .stat-label {
+            font-size: 0.85em;
+            color: #888;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            font-weight: 600;
+            margin-bottom: 10px;
+        }
+        
+        .stat-value {
+            font-size: 2.8em;
+            font-weight: 700;
+            color: #333;
+            position: relative;
+            z-index: 1;
+        }
+        
+        .stat-card:nth-child(2) {
+            border-left-color: #764ba2;
+        }
+        .stat-card:nth-child(2) .stat-icon {
+            color: #764ba2;
+        }
+        
+        .stat-card:nth-child(3) {
+            border-left-color: #f093fb;
+        }
+        .stat-card:nth-child(3) .stat-icon {
+            color: #f093fb;
+        }
+        
+        .stat-card:nth-child(4) {
+            border-left-color: #4facfe;
+        }
+        .stat-card:nth-child(4) .stat-icon {
+            color: #4facfe;
+        }
+        
+        .section {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            padding: 30px;
+            margin-bottom: 40px;
+        }
+        
+        .section-title {
+            font-size: 1.8em;
+            font-weight: 700;
+            color: #333;
+            margin-bottom: 25px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            border-bottom: 2px solid #667eea;
+            padding-bottom: 15px;
+        }
+        
+        .chart-container {
+            position: relative;
+            height: 350px;
+            margin-bottom: 30px;
+            background: #f9fafb;
+            border-radius: 10px;
+            padding: 20px;
+        }
+        
+        .directors-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            gap: 15px;
+        }
+        
+        .director-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 15px;
+            border-radius: 8px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        
+        .director-name {
+            font-weight: 600;
+            font-size: 0.95em;
+        }
+        
+        .director-count {
+            background: rgba(255,255,255,0.3);
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-weight: 700;
+            font-size: 0.85em;
+        }
+        
+        .movies-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+        
+        .movies-table th {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 15px;
+            text-align: left;
+            font-weight: 600;
+        }
+        
+        .movies-table td {
+            padding: 15px;
+            border-bottom: 1px solid #e0e0e0;
+        }
+        
+        .movies-table tr:hover {
+            background: #f9fafb;
+        }
+        
+        .year-timeline {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-top: 20px;
+        }
+        
+        .year-badge {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-weight: 600;
+            font-size: 0.85em;
+        }
+        
+        .no-data {
+            text-align: center;
+            padding: 60px 20px;
+            color: #999;
+        }
+        
+        .loading {
+            text-align: center;
+            padding: 20px;
+            color: #666;
+        }
+        
+        @media (max-width: 768px) {
+            .header h1 {
+                font-size: 1.8em;
+            }
+            
+            .year-slider-group {
+                grid-template-columns: 1fr;
+            }
+            
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .directors-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="header">
+        <div class="container-main">
+            <h1>🎬 Malayalam Movies Report</h1>
+            <p>Filter and analyze Malayalam films by year range</p>
+        </div>
+    </div>
+
+    <div class="container-main">
+        <div class="filter-card">
+            <div class="filter-title">
+                <i class="fas fa-sliders-h"></i> Filter by Year Range
+            </div>
+            <div class="year-slider-group">
+                <div class="year-input-group">
+                    <label for="startYear">Start Year</label>
+                    <input type="number" id="startYear" name="startYear" min="1920" max="2025">
+                </div>
+                <div class="year-input-group">
+                    <label for="endYear">End Year</label>
+                    <input type="number" id="endYear" name="endYear" min="1920" max="2025">
+                </div>
+                <button class="btn-filter" onclick="generateYearReport()">
+                    <i class="fas fa-search"></i> Filter
+                </button>
+                <button class="btn-reset" onclick="resetFilters()">
+                    <i class="fas fa-redo"></i> Reset
+                </button>
+            </div>
+        </div>
+
+        <div id="statsContainer" class="stats-grid"></div>
+
+        <div id="reportSection" style="display: none;">
+            <div class="section">
+                <div class="section-title">
+                    <i class="fas fa-chart-bar"></i> Report Charts
+                </div>
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 30px;">
+                    <div class="chart-container">
+                        <canvas id="directorsChart"></canvas>
+                    </div>
+                    <div class="chart-container">
+                        <canvas id="genresChart"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <div class="section">
+                <div class="section-title">
+                    <i class="fas fa-calendar"></i> Movies by Year
+                </div>
+                <div id="yearTimelineContainer"></div>
+            </div>
+        </div>
+
+        <div class="section" id="moviesSection" style="display: none;">
+            <div class="section-title">
+                <i class="fas fa-film"></i> Filtered Movies <span id="movieCount"></span>
+            </div>
+            <div style="overflow-x: auto;">
+                <table class="movies-table">
+                    <thead>
+                        <tr>
+                            <th>Title</th>
+                            <th>Year</th>
+                            <th>Director(s)</th>
+                            <th>Genre(s)</th>
+                        </tr>
+                    </thead>
+                    <tbody id="moviesTableBody">
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <div class="section" id="directorsSection" style="display: none;">
+            <div class="section-title">
+                <i class="fas fa-users"></i> Top Directors
+            </div>
+            <div class="directors-grid" id="directorsGrid"></div>
+        </div>
+    </div>
+
+    <script>
+        let allYears = [];
+        let currentReport = null;
+        let directorsChartInstance = null;
+        let genresChartInstance = null;
+
+        async function loadYears() {
+            try {
+                const response = await fetch('/api/years');
+                const data = await response.json();
+                allYears = data.years;
+                
+                const minYear = Math.min(...allYears);
+                const maxYear = Math.max(...allYears);
+                
+                document.getElementById('startYear').value = minYear;
+                document.getElementById('endYear').value = maxYear;
+            } catch (error) {
+                console.error('Error loading years:', error);
+            }
+        }
+
+        async function generateYearReport() {
+            const startYear = parseInt(document.getElementById('startYear').value);
+            const endYear = parseInt(document.getElementById('endYear').value);
+
+            if (!startYear || !endYear) {
+                alert('Please enter both start and end years');
+                return;
+            }
+
+            if (startYear > endYear) {
+                alert('Start year cannot be greater than end year');
+                return;
+            }
+
+            try {
+                const response = await fetch(`/api/report/by-year?start_year=${startYear}&end_year=${endYear}`);
+                const data = await response.json();
+                currentReport = data;
+
+                displayStats(data.statistics);
+                displayCharts(data);
+                displayMoviesByYear(data.movies_by_year);
+                displayTopDirectors(data.statistics.top_directors);
+                displayMoviesTable(data.statistics.movies);
+
+                document.getElementById('reportSection').style.display = 'block';
+                document.getElementById('moviesSection').style.display = 'block';
+                document.getElementById('directorsSection').style.display = 'block';
+            } catch (error) {
+                console.error('Error generating report:', error);
+                alert('Error generating report');
+            }
+        }
+
+        function displayStats(stats) {
+            const container = document.getElementById('statsContainer');
+            container.innerHTML = `
+                <div class="stat-card">
+                    <div class="stat-icon">🎬</div>
+                    <div class="stat-label">Total Movies</div>
+                    <div class="stat-value">${stats.total_movies}</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon">👤</div>
+                    <div class="stat-label">Unique Directors</div>
+                    <div class="stat-value">${stats.unique_directors}</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon">🎭</div>
+                    <div class="stat-label">Unique Genres</div>
+                    <div class="stat-value">${stats.unique_genres}</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon">🎞️</div>
+                    <div class="stat-label">Years Span</div>
+                    <div class="stat-value">${currentReport.filter.start_year}-${currentReport.filter.end_year}</div>
+                </div>
+            `;
+        }
+
+        function displayCharts(data) {
+            const stats = data.statistics;
+            
+            if (directorsChartInstance) {
+                directorsChartInstance.destroy();
+            }
+            if (genresChartInstance) {
+                genresChartInstance.destroy();
+            }
+            
+            const topDirectors = stats.top_directors.slice(0, 8);
+            const directorNames = topDirectors.map(d => d.name);
+            const directorCounts = topDirectors.map(d => d.count);
+            
+            const topGenres = stats.genres.slice(0, 8);
+            const genreNames = topGenres.map(g => g.name);
+            const genreCounts = topGenres.map(g => g.count);
+            
+            directorsChartInstance = new Chart(document.getElementById('directorsChart'), {
+                type: 'bar',
+                data: {
+                    labels: directorNames,
+                    datasets: [{
+                        label: 'Movies',
+                        data: directorCounts,
+                        backgroundColor: '#667eea'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { display: true } },
+                    indexAxis: 'y'
+                }
+            });
+
+            genresChartInstance = new Chart(document.getElementById('genresChart'), {
+                type: 'doughnut',
+                data: {
+                    labels: genreNames,
+                    datasets: [{
+                        data: genreCounts,
+                        backgroundColor: ['#667eea', '#764ba2', '#f093fb', '#4facfe', '#43e97b', '#fa709a', '#fee140', '#30b0fe']
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { position: 'bottom' } }
+                }
+            });
+        }
+
+        function displayMoviesByYear(moviesByYear) {
+            const container = document.getElementById('yearTimelineContainer');
+            let html = '<div class="year-timeline">';
+            
+            Object.keys(moviesByYear).sort().reverse().forEach(year => {
+                const count = moviesByYear[year].length;
+                html += `<div class="year-badge">${year}: ${count} movies</div>`;
+            });
+            
+            html += '</div>';
+            container.innerHTML = html;
+        }
+
+        function displayTopDirectors(topDirectors) {
+            const container = document.getElementById('directorsGrid');
+            let html = '';
+            
+            topDirectors.forEach(director => {
+                html += `
+                    <div class="director-card">
+                        <span class="director-name">${director.name}</span>
+                        <span class="director-count">${director.count}</span>
+                    </div>
+                `;
+            });
+            
+            container.innerHTML = html;
+        }
+
+        function displayMoviesTable(movies) {
+            const tbody = document.getElementById('moviesTableBody');
+            document.getElementById('movieCount').textContent = `(${movies.length} movies)`;
+            
+            let html = '';
+            movies.forEach(movie => {
+                const directors = movie.directors.length > 0 ? movie.directors.join(', ') : 'Unknown';
+                const genres = movie.genres.length > 0 ? movie.genres.join(', ') : 'N/A';
+                const year = movie.release_year || 'N/A';
+                
+                html += `
+                    <tr>
+                        <td><strong>${movie.title}</strong></td>
+                        <td>${year}</td>
+                        <td>${directors}</td>
+                        <td>${genres}</td>
+                    </tr>
+                `;
+            });
+            
+            tbody.innerHTML = html;
+        }
+
+        function resetFilters() {
+            if (allYears.length > 0) {
+                const minYear = Math.min(...allYears);
+                const maxYear = Math.max(...allYears);
+                
+                document.getElementById('startYear').value = minYear;
+                document.getElementById('endYear').value = maxYear;
+            }
+            
+            document.getElementById('reportSection').style.display = 'none';
+            document.getElementById('moviesSection').style.display = 'none';
+            document.getElementById('directorsSection').style.display = 'none';
+            document.getElementById('statsContainer').innerHTML = '';
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            loadYears();
+        });
+    </script>
+
+</body>
+</html>
